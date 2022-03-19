@@ -1,1 +1,1 @@
-# Discord.js complimentary ui library
+# Discord.js ui library
