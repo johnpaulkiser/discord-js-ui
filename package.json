@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/johnpaulkiser/discord-js-ui/issues"
   },
-  "homepage": "https://github.com/johnpaulkiser/discord-js-ui#readme"
+  "homepage": "https://github.com/johnpaulkiser/discord-js-ui#readme",
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
 }
