@@ -1,20 +1,32 @@
 {
-  "name": "discord.js-ui",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "discord-js-ui",
+  "version": "0.0.1",
+  "description": "A UI plugin library for discord.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node src/development-client/deploy-commands && ts-node src/development-client/index.ts",
     "build": "tsc",
-    "dev": "ts-node src/development-client/deploy-commands && ts-node src/development-client/index.ts"
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint",
+    "preversion": "npm run lint"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/johnpaulkiser/discord-js-ui.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "keywords": [
+    "discord bot",
+    "Discord.js",
+    "UI",
+    "components",
+    "plugin"
+  ],
+  "author": "JP Kiser",
   "bugs": {
     "url": "https://github.com/johnpaulkiser/discord-js-ui/issues"
   },

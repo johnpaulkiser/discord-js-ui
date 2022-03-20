@@ -1,7 +1,7 @@
 import {
   BaseCommandInteraction,
   MessageActionRow,
-  MessageEmbed,
+  //   MessageEmbed,
   MessageSelectMenu,
   MessageSelectOptionData,
 } from 'discord.js'
