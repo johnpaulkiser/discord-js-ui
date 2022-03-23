@@ -1,27 +1,60 @@
+import { randomUUID } from 'crypto'
 import {
   BaseCommandInteraction,
+  Interaction,
   MessageActionRow,
-  //   MessageEmbed,
+  MessageEmbed,
   MessageSelectMenu,
-  MessageSelectOptionData,
 } from 'discord.js'
 
-export type SelectMenuOption = {
-  contents: string
-} & Omit<MessageSelectOptionData, 'value'>
+import * as manager from '../../manager'
+import {
+  isSelectMenuOptionWithContents,
+  isSelectMenuOptionWithEmbedAndContents,
+  SelectMenuOption,
+} from './types'
 
-export async function createSelectMenu(interaction: BaseCommandInteraction, options: SelectMenuOption[]) {
+async function createSelectMenu(
+  interaction: BaseCommandInteraction,
+  options: SelectMenuOption[],
+) {
   const client = interaction.client
-  const contentsMap: Record<string, SelectMenuOption['contents']> = options.reduce((prev, curr, i) => {
+  const id = randomUUID()
+
+  const contentsMap: Record<
+    string,
+    { contents?: string; embed?: MessageEmbed | MessageEmbed[] }
+  > = options.reduce((prev, curr, i) => {
+    if (isSelectMenuOptionWithEmbedAndContents(curr)) {
+      return {
+        ...prev,
+        [i]: {
+          embed: curr.embed,
+          contents: curr.contents,
+        },
+      }
+    }
+
+    if (isSelectMenuOptionWithContents(curr)) {
+      return {
+        ...prev,
+        [i]: {
+          contents: curr.contents,
+        },
+      }
+    }
+
     return {
       ...prev,
-      [i]: curr.contents,
+      [i]: {
+        embed: curr.embed,
+      },
     }
   }, {})
 
   const updateMenu = (defaultIndex?: number) => {
     return new MessageActionRow().addComponents(
-      new MessageSelectMenu().setCustomId('select').addOptions([
+      new MessageSelectMenu().setCustomId(id).addOptions([
         ...options.map((option, i) => {
           return {
             ...option,
@@ -34,17 +67,34 @@ export async function createSelectMenu(interaction: BaseCommandInteraction, opti
   }
   const menu = updateMenu()
 
-  client.on('interactionCreate', (interaction) => {
+  const cb = (interaction: Interaction) => {
     if (!interaction.isSelectMenu()) return
+    if (interaction.customId != id) return
+
     const selectedId = interaction.values[0]
+    const view = contentsMap[selectedId]
 
     interaction.update({
-      content: contentsMap[selectedId],
+      content: view.contents || null,
+      embeds: view.embed
+        ? Array.isArray(view.embed)
+          ? view.embed
+          : [view.embed]
+        : [],
       components: [updateMenu(parseInt(selectedId, 10))],
     })
-  })
+
+    manager.update(id)
+  }
+
+  client.on('interactionCreate', cb)
+  manager.register(id, 'interactionCreate', cb)
+
+  console.log(client.listenerCount('interactionCreate'))
 
   interaction.reply({
     components: [menu],
   })
 }
+
+export { SelectMenuOption, createSelectMenu }

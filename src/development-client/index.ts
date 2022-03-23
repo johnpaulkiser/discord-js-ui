@@ -1,6 +1,7 @@
 import { token } from './config'
 import { Client, Intents } from 'discord.js'
 import commands from './commands'
+import { UIManager } from '../'
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
 
@@ -24,5 +25,8 @@ client.on('interactionCreate', async (interaction) => {
     })
   }
 })
+
+//Need to initialze the the UI library first
+UIManager.init(client)
 
 client.login(token)
