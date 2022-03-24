@@ -3,7 +3,7 @@ import { ListenerCallBack, ListenerEntryType } from './types'
 
 let client: Client
 const listeners: ListenerEntryType = {}
-let timeout: number
+let globalTimeout = 60_000
 const INITIAL_TIMEOUT = 60_000 * 5
 
 /**
@@ -11,17 +11,20 @@ const INITIAL_TIMEOUT = 60_000 * 5
  */
 function init(
   discordClient: Client,
-  options: {
-    timeout: number
-  } = {
-    timeout: 60_000,
+  options?: {
+    timeout?: number
   },
 ) {
   client = discordClient
-  timeout = options.timeout
+  globalTimeout = options?.timeout || globalTimeout
 }
 
-export function register(id: string, eventName: string, callback: ListenerCallBack) {
+export function register(
+  id: string,
+  eventName: string,
+  callback: ListenerCallBack,
+  userDefinedTimeout: number | undefined,
+) {
   if (!client) {
     throw new Error(
       'UIManager not initialized, make sure to call UIManager.init(client)' +
@@ -39,6 +42,7 @@ export function register(id: string, eventName: string, callback: ListenerCallBa
     listenerCallback: callback,
     eventName,
     timeout: timer,
+    userDefinedTimeout,
   }
 }
 
@@ -53,7 +57,7 @@ export function update(id: string) {
   const timer = setTimeout(() => {
     delete listeners[id]
     client.removeListener(eventName, listenerCallback)
-  }, timeout)
+  }, listener.userDefinedTimeout || globalTimeout)
 
   listener.timeout = timer
 }

@@ -10,12 +10,14 @@ import * as manager from '../../manager'
 import {
   isSelectMenuOptionWithContents,
   isSelectMenuOptionWithEmbedAndContents,
+  SelectMenuConfig,
   SelectMenuOption,
 } from './types'
 
 async function createSelectMenu(
   interaction: BaseCommandInteraction,
   options: SelectMenuOption[],
+  config: SelectMenuConfig = {},
 ) {
   const client = interaction.client
   const id = manager.getNewId()
@@ -78,10 +80,11 @@ async function createSelectMenu(
   }
 
   client.on('interactionCreate', cb)
-  manager.register(id, 'interactionCreate', cb)
+  manager.register(id, 'interactionCreate', cb, config.timeout)
 
   interaction.reply({
     components: [menu],
+    ephemeral: config.ephemeral,
   })
 }
 

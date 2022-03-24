@@ -20,6 +20,18 @@ export type SelectMenuOption =
   | SelectMenuOptionWithEmbed
   | SelectMenuOptionWithEmbedAndContent
 
+export type SelectMenuConfig = {
+  /*
+   * Whether this component is only viewable to the interaction issuer or not
+   */
+  ephemeral?: boolean
+
+  /*
+   * How long this component will remain active and interactable between interactions
+   */
+  timeout?: number
+}
+
 export function isSelectMenuOptionWithContents(
   option: SelectMenuOption,
 ): option is SelectMenuOptionWithContents {

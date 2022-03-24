@@ -4,5 +4,10 @@ export type ListenerCallBack = (interaction: Interaction) => void | Promise<void
 
 export type ListenerEntryType = Record<
   string,
-  { listenerCallback: ListenerCallBack; eventName: string; timeout: NodeJS.Timeout }
+  {
+    listenerCallback: ListenerCallBack
+    eventName: string
+    timeout: NodeJS.Timeout
+    userDefinedTimeout: number | undefined
+  }
 >
