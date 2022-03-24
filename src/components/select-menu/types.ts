@@ -30,6 +30,16 @@ export type SelectMenuConfig = {
    * How long this component will remain active and interactable between interactions
    */
   timeout?: number
+
+  /*
+   * Which view to show as selected first
+   */
+  startingIndex?: number
+}
+
+export type View = {
+  contents?: string
+  embed?: MessageEmbed | MessageEmbed[]
 }
 
 export function isSelectMenuOptionWithContents(

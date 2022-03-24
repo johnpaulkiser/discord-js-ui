@@ -49,6 +49,7 @@ export const menu: Command = {
     createSelectMenu(interaction, views, {
       timeout: 45_000,
       ephemeral: true,
+      startingIndex: 3,
     })
   },
 }
