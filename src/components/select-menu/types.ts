@@ -15,11 +15,10 @@ export type SelectMenuOptionWithEmbedAndContent = {
   embed: MessageEmbed | MessageEmbed[]
 } & SelectMenuOptionBase
 
-export type SelectMenuOptions = Array<
+export type SelectMenuOption =
   | SelectMenuOptionWithContents
   | SelectMenuOptionWithEmbed
   | SelectMenuOptionWithEmbedAndContent
->
 
 export function isSelectMenuOptionWithContents(
   option: SelectMenuOption,

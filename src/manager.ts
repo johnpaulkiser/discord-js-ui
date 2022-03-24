@@ -1,28 +1,44 @@
-import { Client, Interaction } from 'discord.js'
-
-type ListenerCallBack = (interaction: Interaction) => void | Promise<void>
-
-type ListenerEntryType = Record<
-  string,
-  { listenerCallback: ListenerCallBack; eventName: string; timeout?: NodeJS.Timeout }
->
+import { Client } from 'discord.js'
+import { ListenerCallBack, ListenerEntryType } from './types'
 
 let client: Client
-
 const listeners: ListenerEntryType = {}
+let timeout: number
+const INITIAL_TIMEOUT = 60_000 * 5
 
-const timeout = 20_000 // 20 seconds
+/**
+ *  Initializes discord-js-ui with the discord client - Must be called before using any components
+ */
+function init(
+  discordClient: Client,
+  options: {
+    timeout: number
+  } = {
+    timeout: 60_000,
+  },
+) {
+  client = discordClient
+  timeout = options.timeout
+}
 
 export function register(id: string, eventName: string, callback: ListenerCallBack) {
   if (!client) {
     throw new Error(
-      'UIManager not initialized, make sure to call UIManager.init(client) after your Discord.js Client object has initialized',
+      'UIManager not initialized, make sure to call UIManager.init(client)' +
+        ' after your Discord.js Client object has initialized',
     )
   }
+
+  //set initial timeout for when users never creates interaction
+  const timer = setTimeout(() => {
+    delete listeners[id]
+    client.removeListener(eventName, callback)
+  }, INITIAL_TIMEOUT)
 
   listeners[id] = {
     listenerCallback: callback,
     eventName,
+    timeout: timer,
   }
 }
 
@@ -35,19 +51,22 @@ export function update(id: string) {
   }
 
   const timer = setTimeout(() => {
-    client.removeListener(eventName, listenerCallback)
     delete listeners[id]
+    client.removeListener(eventName, listenerCallback)
   }, timeout)
 
   listener.timeout = timer
 }
 
-/**
- *  Initializes discord-js-ui with the discord client - Must be called before using any components
- * @param discordClient
- */
-function init(discordClient: Client) {
-  client = discordClient
+export function getNewId() {
+  if (!client) {
+    throw new Error(
+      'UIManager not initialized, make sure to call UIManager.init(client)' +
+        ' after your Discord.js Client object has initialized',
+    )
+  }
+
+  return Object.keys(listeners).length.toString()
 }
 
 export const UIManager = {

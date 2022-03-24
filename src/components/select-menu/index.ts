@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import {
   BaseCommandInteraction,
   Interaction,
@@ -19,38 +18,29 @@ async function createSelectMenu(
   options: SelectMenuOption[],
 ) {
   const client = interaction.client
-  const id = randomUUID()
+  const id = manager.getNewId()
 
-  const contentsMap: Record<
-    string,
-    { contents?: string; embed?: MessageEmbed | MessageEmbed[] }
-  > = options.reduce((prev, curr, i) => {
-    if (isSelectMenuOptionWithEmbedAndContents(curr)) {
+  const viewsList: Array<{
+    contents?: string
+    embed?: MessageEmbed | MessageEmbed[]
+  }> = options.map((option: SelectMenuOption) => {
+    if (isSelectMenuOptionWithEmbedAndContents(option)) {
       return {
-        ...prev,
-        [i]: {
-          embed: curr.embed,
-          contents: curr.contents,
-        },
+        embed: option.embed,
+        contents: option.contents,
       }
     }
 
-    if (isSelectMenuOptionWithContents(curr)) {
+    if (isSelectMenuOptionWithContents(option)) {
       return {
-        ...prev,
-        [i]: {
-          contents: curr.contents,
-        },
+        contents: option.contents,
       }
     }
 
     return {
-      ...prev,
-      [i]: {
-        embed: curr.embed,
-      },
+      embed: option.embed,
     }
-  }, {})
+  })
 
   const updateMenu = (defaultIndex?: number) => {
     return new MessageActionRow().addComponents(
@@ -71,8 +61,8 @@ async function createSelectMenu(
     if (!interaction.isSelectMenu()) return
     if (interaction.customId != id) return
 
-    const selectedId = interaction.values[0]
-    const view = contentsMap[selectedId]
+    const currentId = parseInt(interaction.values[0], 10)
+    const view = viewsList[currentId]
 
     interaction.update({
       content: view.contents || null,
@@ -81,7 +71,7 @@ async function createSelectMenu(
           ? view.embed
           : [view.embed]
         : [],
-      components: [updateMenu(parseInt(selectedId, 10))],
+      components: [updateMenu(currentId)],
     })
 
     manager.update(id)
@@ -89,8 +79,6 @@ async function createSelectMenu(
 
   client.on('interactionCreate', cb)
   manager.register(id, 'interactionCreate', cb)
-
-  console.log(client.listenerCount('interactionCreate'))
 
   interaction.reply({
     components: [menu],

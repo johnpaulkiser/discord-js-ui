@@ -1,6 +1,6 @@
 {
   "name": "discord-js-ui",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A UI plugin library for discord.js",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
