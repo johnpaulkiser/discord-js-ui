@@ -8,7 +8,7 @@ export const menu: Command = {
     .setName('menu')
     .setDescription('Replies with a menu!'),
   execute: async (interaction) => {
-    const views: SelectMenuOption[] = [
+    const options: SelectMenuOption[] = [
       {
         contents: 'option 1',
         embed: new MessageEmbed({
@@ -46,7 +46,7 @@ export const menu: Command = {
       },
     ]
 
-    createSelectMenu(interaction, views, {
+    const { views, rehydrate } = await createSelectMenu(interaction, options, {
       timeout: 45_000,
       ephemeral: true,
       startingIndex: 3,

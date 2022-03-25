@@ -1,5 +1,5 @@
 import {
-  BaseCommandInteraction,
+  CommandInteraction,
   Interaction,
   MessageActionRow,
   MessageSelectMenu,
@@ -7,20 +7,21 @@ import {
 
 import * as manager from '../../manager'
 import {
-  isSelectMenuOptionWithContents,
-  isSelectMenuOptionWithEmbedAndContents,
-  SelectMenuConfig,
-  SelectMenuOption,
+  isMenuOptionWithContents,
+  isMenuOptionWithEmbedAndContents,
   View,
-} from './types'
+  MenuConfig,
+} from '../types'
+import { SelectMenuOption } from './types'
 
 async function createSelectMenu(
-  interaction: BaseCommandInteraction,
+  interaction: CommandInteraction,
   options: SelectMenuOption[],
-  config: SelectMenuConfig = {},
+  config: MenuConfig = {},
 ) {
   const client = interaction.client
   const id = manager.getNewId()
+  let index = config.startingIndex
 
   if (
     config.startingIndex &&
@@ -30,14 +31,14 @@ async function createSelectMenu(
   }
 
   const viewsList: View[] = options.map((option: SelectMenuOption) => {
-    if (isSelectMenuOptionWithEmbedAndContents(option)) {
+    if (isMenuOptionWithEmbedAndContents(option)) {
       return {
         embed: option.embed,
         contents: option.contents,
       }
     }
 
-    if (isSelectMenuOptionWithContents(option)) {
+    if (isMenuOptionWithContents(option)) {
       return {
         contents: option.contents,
       }
@@ -61,17 +62,25 @@ async function createSelectMenu(
       ]),
     )
   }
+
   const menu = updateMenu(config.startingIndex)
+
+  const rehydrate = () => {
+    if (index == undefined) return
+    interaction.editReply({
+      ...getCurrentViewObj(viewsList, index),
+    })
+  }
 
   const cb = (interaction: Interaction) => {
     if (!interaction.isSelectMenu()) return
     if (interaction.customId != id) return
 
-    const currentId = parseInt(interaction.values[0], 10)
+    index = parseInt(interaction.values[0], 10)
 
     interaction.update({
-      ...getCurrentViewObj(viewsList, currentId),
-      components: [updateMenu(currentId)],
+      ...getCurrentViewObj(viewsList, index),
+      components: [updateMenu(index)],
     })
 
     manager.update(id)
@@ -81,10 +90,12 @@ async function createSelectMenu(
   manager.register(id, 'interactionCreate', cb, config.timeout)
 
   interaction.reply({
-    ...getCurrentViewObj(viewsList, config.startingIndex),
+    ...getCurrentViewObj(viewsList, index),
     components: [menu],
     ephemeral: config.ephemeral,
   })
+
+  return { views: viewsList, rehydrate }
 }
 
 const getCurrentViewObj = (viewList: View[], index?: number) => {
